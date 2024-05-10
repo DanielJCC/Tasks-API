@@ -14,6 +14,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     // Find a User by userName
     List<User> findByUserNameContainingIgnoreCase(String userName);
     // Find a User by age
-    @Query("select u from User u where diff(now(),u.birthdate) = ?1")
+    @Query("select u from User u where year(CURRENT_DATE)-year(u.birthdate)  = ?1")
     List<User> findByAge(Integer age);
 }

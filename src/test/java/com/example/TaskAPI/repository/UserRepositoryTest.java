@@ -1,6 +1,7 @@
 package com.example.TaskAPI.repository;
 
 import com.example.TaskAPI.AbstractIntegrationDBTest;
+import com.example.TaskAPI.entities.Task;
 import com.example.TaskAPI.entities.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,20 +14,23 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class UserRepositoryTest extends AbstractIntegrationDBTest {
     UserRepository userRepository;
+    TaskRepository taskRepository;
 
     @Autowired
-    public UserRepositoryTest(UserRepository userRepository){
+    public UserRepositoryTest(UserRepository userRepository,
+                              TaskRepository taskRepository) {
         this.userRepository = userRepository;
+        this.taskRepository = taskRepository;
     }
+
     private User globalUser;
 
     @BeforeEach
     void setUp(){
         userRepository.deleteAll();
+        taskRepository.deleteAll();
         globalUser = User.builder()
                 .name("Gian Marco ToyStory")
                 .birthdate(LocalDate.of(2002,12,12))
@@ -57,13 +61,13 @@ class UserRepositoryTest extends AbstractIntegrationDBTest {
     void testUpdate(){
         User userSaved = userRepository.save(globalUser);
         UUID idToFind = userSaved.getId();
-        Optional<User> userFinded = userRepository.findById(idToFind);
+        Optional<User> userFound = userRepository.findById(idToFind);
         //Verify if user is present
-        assertThat(userFinded).isPresent();
+        assertThat(userFound).isPresent();
 
         String userNameUpdated = "GinAsotori";
-        userFinded.get().setUserName(userNameUpdated);
-        User userUpdated = userRepository.save(userFinded.get());
+        userFound.get().setUserName(userNameUpdated);
+        User userUpdated = userRepository.save(userFound.get());
 
         //Verify if user was updated
         assertThat(userUpdated.getUserName()).isEqualTo(userNameUpdated);
@@ -77,5 +81,40 @@ class UserRepositoryTest extends AbstractIntegrationDBTest {
         userRepository.deleteById(idToDelete);
 
         assertThat(userRepository.findAll()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Find a User with Task id")
+    void testFindByTaskId(){
+        User userSaved = userRepository.save(globalUser);
+        Task taskSaved = taskRepository.save(Task.builder()
+                        .title("Hacer acorta link con Spring Boot")
+                        .description("No olvidar hacer el acortador de links en Java")
+                        .isCompleted(false)
+                        .user(userSaved)
+                        .build());
+        Optional<User> userFound = userRepository.findByTasksId(taskSaved.getId());
+        assertThat(userFound).isPresent();
+        assertThat(userFound.get().getId()).isEqualTo(userSaved.getId());
+    }
+
+    @Test
+    @DisplayName("Find Users by userName that contains a given string")
+    void testFindByUserNameIgnoreCase(){
+        User userSaved = userRepository.save(globalUser);
+        List<User> usersFound = userRepository.findByUserNameContainingIgnoreCase("g");
+        assertThat(usersFound).isNotEmpty();
+        assertThat(usersFound.size()).isEqualTo(1);
+        assertThat(usersFound.get(0).getId()).isEqualTo(userSaved.getId());
+    }
+
+    @Test
+    @DisplayName("Find Users by age")
+    void testFindByAge(){
+        User userSaved = userRepository.save(globalUser);
+        List<User> usersFound = userRepository.findByAge(22);
+        assertThat(usersFound).isNotEmpty();
+        assertThat(usersFound.size()).isEqualTo(1);
+        assertThat(usersFound.get(0).getId()).isEqualTo(userSaved.getId());
     }
 }
