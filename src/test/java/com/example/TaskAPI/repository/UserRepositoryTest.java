@@ -45,6 +45,7 @@ class UserRepositoryTest extends AbstractIntegrationDBTest {
         User userSaved = userRepository.save(globalUser);
         assertThat(userSaved).isNotNull();
         assertThat(userSaved.getId()).isNotNull();
+        assertThat(userSaved.getName()).isEqualTo(globalUser.getName());
     }
 
     @Test
@@ -116,5 +117,6 @@ class UserRepositoryTest extends AbstractIntegrationDBTest {
         assertThat(usersFound).isNotEmpty();
         assertThat(usersFound.size()).isEqualTo(1);
         assertThat(usersFound.get(0).getId()).isEqualTo(userSaved.getId());
+        assertThat(usersFound.get(0).getBirthdate()).isEqualTo(userSaved.getBirthdate());
     }
 }
