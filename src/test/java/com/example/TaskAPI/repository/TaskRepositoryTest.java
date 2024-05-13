@@ -108,4 +108,16 @@ class TaskRepositoryTest extends AbstractIntegrationDBTest {
         assertThat(allTasks.size()).isEqualTo(1);
         assertThat(allTasks.get(0).getTitle()).isEqualTo(taskSaved2.getTitle());
     }
+    @Test
+    @DisplayName("Find tasks by User id")
+    void testFindByUserId(){
+        Task taskSaved = taskRepository.save(globalTask);
+        Task taskSaved2 = taskRepository.save(globalTask2);
+        UUID idToFind = globalUser.getId();
+
+        List<Task> tasksFound = taskRepository.findByUserId(idToFind);
+        assertThat(tasksFound.size()).isEqualTo(2);
+        assertThat(tasksFound.get(0).getDescription()).isEqualTo(taskSaved.getDescription());
+        assertThat(tasksFound.get(1).getIsCompleted()).isEqualTo(taskSaved2.getIsCompleted());
+    }
 }
